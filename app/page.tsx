@@ -6,19 +6,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faClock, 
   faCalendarDay, 
-  faTicket, 
   faQuestionCircle,
   faParking,
   faReceipt,
   faTimes,
-  faCar,
-  faArrowRight,
   faQrcode,
-  faCircleInfo
+  faCircleInfo,
+  faTicket
 } from '@fortawesome/free-solid-svg-icons';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Jotai atoms for state management
-const minutesAtom = atom(25);
+const minutesAtom = atom(56);
 const maxMinutesAtom = atom(60);
 const billAmountAtom = atom("R10");
 const validUntilAtom = atom("14:30");
@@ -35,7 +34,6 @@ export default function Home() {
   const [mallCloses] = useAtom(mallClosesAtom);
   const [isModalOpen, setIsModalOpen] = useAtom(isModalOpenAtom);
   const [hasSeenIntro, setHasSeenIntro] = useAtom(hasSeenIntroAtom);
-  const [isHovering, setIsHovering] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   
   // Initialize gradient positions
@@ -77,92 +75,148 @@ export default function Home() {
     <div 
       ref={gradientRef}
       onMouseMove={handleMouseMove} 
-      className="flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black relative"
+      className="flex flex-col items-center justify-center min-h-screen overflow-hidden bg-gray-50 relative"
     >
       {/* Interactive background */}
       <div 
-        className="absolute inset-0 opacity-40 transition-all duration-1000 ease-out"
+        className="absolute inset-0 opacity-60 transition-all duration-1000 ease-out"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgb(4, 120, 87, 0.15), transparent 45%), 
-                       radial-gradient(circle at ${100 - mousePosition.x}% ${100 - mousePosition.y}%, rgb(5, 150, 105, 0.1), transparent 40%),
-                       linear-gradient(to bottom, #090909, #111111)`
+          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgb(4, 120, 87, 0.05), transparent 45%), 
+                       radial-gradient(circle at ${100 - mousePosition.x}% ${100 - mousePosition.y}%, rgb(5, 150, 105, 0.03), transparent 40%),
+                       linear-gradient(to bottom, #ffffff, #f9fafb)`
         }}
       />
       
       {/* Animated decorative elements */}
       <div className="absolute w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-emerald-900/10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-emerald-800/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-1/2 left-2/3 w-40 h-40 bg-emerald-900/5 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-emerald-100 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-emerald-50 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-1/2 left-2/3 w-40 h-40 bg-emerald-100 rounded-full blur-3xl animate-float-delayed"></div>
         
         {/* Particle effect */}
         <Particles />
       </div>
       
       {/* Intro splash screen */}
-      {!hasSeenIntro && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black animate-fadeOut">
-          <div className="flex items-center gap-3 animate-scaleIntro">
-            <FontAwesomeIcon icon={faParking} className="text-emerald-300 text-6xl animate-pulse" />
-            <span className="text-5xl text-white font-light">ParkSmart</span>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {!hasSeenIntro && (
+          <motion.div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-white"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.div 
+              className="flex items-center gap-3"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.2, opacity: 0 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 260,
+                damping: 20
+              }}
+            >
+              <motion.div
+                animate={{ 
+                  rotate: [0, 10, 0, -10, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              >
+                <FontAwesomeIcon icon={faParking} className="text-emerald-600 text-6xl" />
+              </motion.div>
+              <span className="text-5xl text-gray-900 font-light">ParkSmart</span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Main page content */}
-      <div className={`mb-12 text-center relative z-10 transition-all duration-1000 ${hasSeenIntro ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      <motion.div 
+        className="mb-12 text-center relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ 
+          opacity: hasSeenIntro ? 1 : 0, 
+          y: hasSeenIntro ? 0 : 20 
+        }}
+        transition={{ 
+          duration: 0.6,
+          delay: 0.2,
+          type: "spring",
+          stiffness: 100
+        }}
+      >
         <div className="mb-3 flex items-center justify-center">
-          <div className="h-px w-10 bg-gradient-to-r from-transparent to-emerald-500/30 mr-4"></div>
-          <span className="text-emerald-400/80 text-sm uppercase tracking-widest font-light">Digital Ticket System</span>
-          <div className="h-px w-10 bg-gradient-to-l from-transparent to-emerald-500/30 ml-4"></div>
+          <div className="h-px w-10 bg-gradient-to-r from-transparent to-emerald-500/40 mr-4"></div>
+          <span className="text-emerald-700 text-sm uppercase tracking-widest font-medium">Digital Ticket System</span>
+          <div className="h-px w-10 bg-gradient-to-l from-transparent to-emerald-500/40 ml-4"></div>
         </div>
         
-        <h1 className="text-5xl font-light text-white mb-6 font-roboto-condensed flex items-center justify-center gap-3">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-300">
+        <motion.h1 
+          className="text-5xl font-light text-gray-900 mb-6 font-roboto-condensed flex items-center justify-center gap-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800">
             Mall Parking
           </span>
-        </h1>
-        <p className="text-gray-300 max-w-md mx-auto leading-relaxed">
+        </motion.h1>
+        
+        <motion.p 
+          className="text-gray-700 max-w-md mx-auto leading-relaxed"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
           View and manage your parking details with our digital ticket system. 
           Monitor your remaining time and extend your stay easily.
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
       
-      {/* Button to open modal - with hover effects */}
-      <button
+      {/* Button to open modal - with ticket icon */}
+      <motion.button
         onClick={() => setIsModalOpen(true)}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-        className={`group relative px-8 py-4 rounded-xl 
-                  flex items-center gap-3 transition-all duration-500
-                  font-roboto-condensed tracking-wide overflow-hidden
-                  ${hasSeenIntro ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}
+        className="fixed bottom-6 right-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-2 focus:ring-offset-white"
+        aria-label="Open Parking Ticket Modal"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ 
+          scale: hasSeenIntro ? 1 : 0, 
+          opacity: hasSeenIntro ? 1 : 0,
+          y: [0, -8, 0]
+        }}
+        transition={{ 
+          delay: 0.8,
+          type: "spring",
+          stiffness: 260,
+          damping: 20,
+          y: {
+            delay: 1.5,
+            duration: 1.5,
+            repeat: Infinity,
+            repeatType: "loop",
+            repeatDelay: 5
+          }
+        }}
+        whileHover={{ 
+          scale: 1.1,
+          boxShadow: "0 0 15px rgba(16, 185, 129, 0.5)"
+        }}
+        whileTap={{ scale: 0.9 }}
       >
-        {/* Button background with animated gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/40 via-emerald-800/30 to-emerald-900/40 backdrop-blur-md border border-emerald-500/20 rounded-xl transition-all duration-500 group-hover:bg-emerald-800/30"></div>
-        
-        {/* Button shine effect */}
-        <div 
-          className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1200 rounded-xl overflow-hidden`}
-        >
-          <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] bg-gradient-to-r from-transparent via-white/5 to-transparent transition-all duration-1500 ease-in-out"></div>
-        </div>
-        
-        {/* Button content */}
-        <FontAwesomeIcon icon={faCar} className="text-emerald-300 z-10 text-lg" />
-        <span className="text-white z-10">View Parking Ticket</span>
-        <FontAwesomeIcon 
-          icon={faArrowRight} 
-          className="text-emerald-300/60 text-sm ml-2 z-10 transform translate-x-0 group-hover:translate-x-1 transition-transform duration-300" 
+        <FontAwesomeIcon icon={faTicket} className="text-xl" />
+        <motion.div
+          className="absolute -inset-1 rounded-full bg-emerald-500/20 z-0"
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileHover={{ opacity: 1, scale: 1.1 }}
+          transition={{ duration: 0.2 }}
         />
-      </button>
-      
-      {/* Magnetic effect hover indicators */}
-      {isHovering && (
-        <div className="absolute w-full h-full pointer-events-none z-0">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl animate-pulse-fast"></div>
-        </div>
-      )}
+      </motion.button>
       
       {/* Modal */}
       <ParkingTicketModal 
@@ -417,6 +471,9 @@ function CircularProgress({
   // Reference for last active dot index (used for glowing edge effect)
   const lastActiveDotIndex = activeDots - 1;
   
+  // Calculate remaining time
+  const remainingTime = maxMinutes - minutes;
+  
   // Helper function to determine color class based on time remaining
   const getTimeColorClass = () => {
     if (minutes <= 10) return "text-red-400"; // Critical time remaining
@@ -424,10 +481,11 @@ function CircularProgress({
     return "text-white"; // Good amount of time remaining
   };
 
-  // Helper function to determine glow color based on time remaining
+  // Helper function to determine glow color based on remaining time
   const getGlowColor = () => {
-    if (minutes <= 10) return "rgba(248, 113, 113, OPACITY)"; // Red glow
-    if (minutes <= 20) return "rgba(252, 211, 77, OPACITY)"; // Amber glow
+    if (remainingTime <= 5) return "rgba(248, 113, 113, OPACITY)"; // Flash red glow
+    if (remainingTime <= 10) return "rgba(248, 113, 113, OPACITY)"; // Red glow
+    if (remainingTime <= 20) return "rgba(252, 211, 77, OPACITY)"; // Amber glow
     return "rgba(52, 211, 153, OPACITY)"; // Default emerald glow
   };
   
@@ -512,7 +570,9 @@ function CircularProgress({
             : 'none';
           
           // Animations for the edge dot
-          const animationClass = index === lastActiveDotIndex 
+          const animationClass = index === lastActiveDotIndex && minutes <= 5
+            ? 'animate-flash' 
+            : index === lastActiveDotIndex 
             ? 'animate-pulse' 
             : '';
           
@@ -625,6 +685,13 @@ function CircularProgress({
 //   0% { transform: translateY(0px); }
 //   50% { transform: translateY(-15px); }
 //   100% { transform: translateY(0px); }
+// }
+// @keyframes flash {
+//   0%, 100% { opacity: 1; }
+//   50% { opacity: 0.5; }
+// }
+// .animate-flash {
+//   animation: flash 1s infinite;
 // }
 // animation: {
 //   fadeIn: 'fadeIn 0.3s ease-out',
