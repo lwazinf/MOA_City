@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TierInfo, TimeUntilChange } from '@/lib/constants';
-import { getTierTextColor, getTierBgColor, getNextTierTextColor } from '@/lib/styleUtils';
+import { getNextTierTextColor } from '@/lib/styleUtils';
 
 interface ExpandedSectionProps {
   timeUntilChange: TimeUntilChange | null;
