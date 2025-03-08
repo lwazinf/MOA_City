@@ -5,6 +5,7 @@ interface ProgressIndicatorProps {
   activeDots: number;
   isPaid: boolean;
   currentTier: TierInfo;
+  isClicking?: boolean;
 }
 
 /**
@@ -13,7 +14,8 @@ interface ProgressIndicatorProps {
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ 
   activeDots, 
   isPaid, 
-  currentTier 
+  currentTier,
+  isClicking = false
 }) => {
   // Get price tier color based on current tier
   const getPriceColor = (tier: number): string => {
@@ -38,7 +40,11 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   };
 
   return (
-    <div className="flex justify-center space-x-1.5 mt-2">
+    <div className={`
+      flex justify-center space-x-1.5 mt-2 
+      transition-all duration-150
+      ${isClicking ? 'transform scale-95' : ''}
+    `}>
       {Array.from({ length: 10 }).map((_, i) => {
         // Determine if light should be active
         const isActive = isPaid ? (i === 0 || i % 3 === 0) : i < activeDots;
@@ -51,16 +57,26 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         // Check if this is the leading dot (last active dot)
         const isLeadingDot = !isPaid && Math.abs(i - activeDots) < 0.5;
         
+        // When clicking, all dots briefly flash
+        const clickAnimDelay = `${i * 20}ms`;
+        
         return (
           <div 
             key={i}
-            className="relative"
+            className={`
+              relative transition-transform duration-150
+              ${isClicking ? 'scale-110' : ''}
+            `}
+            style={{
+              transitionDelay: isClicking ? clickAnimDelay : '0ms'
+            }}
           >
             {/* Outer circle (always visible) */}
             <div 
               className={`
                 h-1.5 w-1.5 rounded-full 
                 ${isActive ? 'bg-zinc-700' : 'bg-zinc-800'}
+                ${isClicking && !isActive ? 'bg-zinc-700' : ''}
                 transition-all duration-300 ease-in-out
               `}
             ></div>
@@ -73,11 +89,13 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                 transition-all duration-500 ease-in-out
                 ${isActive ? getPriceColor(currentTier.tier) : 'bg-transparent opacity-0'}
                 ${isPulse || isLeadingDot ? 'animate-pulse' : ''}
+                ${isClicking ? 'opacity-100' : ''}
               `} 
               style={{ 
-                boxShadow: isActive ? `0 0 8px ${getGlowColor(currentTier.tier)}` : 'none',
+                boxShadow: (isActive || isClicking) ? `0 0 8px ${getGlowColor(currentTier.tier)}` : 'none',
                 animationDelay: isPulse ? pulseDelay : '0ms',
-                transitionDelay: `${i * 40}ms`
+                transitionDelay: isClicking ? clickAnimDelay : `${i * 40}ms`,
+                opacity: isClicking && !isActive ? 0.3 : undefined
               }}
             ></div>
           </div>

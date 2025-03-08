@@ -47,11 +47,37 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
   // Used for the animation frame
   const [animationFrame, setAnimationFrame] = useState(0);
   
+  // State for click animation
+  const [isClicking, setIsClicking] = useState(false);
+  const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
+  const [showRipple, setShowRipple] = useState(false);
+  
   // Toggle expanded state - memoized to prevent recreation on each render
-  const toggleExpand = useCallback(() => {
-    if (!isPaid) {
-      setIsExpanded(prev => !prev);
-    }
+  const toggleExpand = useCallback((e: React.MouseEvent) => {
+    if (isPaid) return;
+    
+    // Capture the position of the click for ripple effect
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setClickPosition({ x, y });
+    
+    // Trigger click animation
+    setIsClicking(true);
+    setShowRipple(true);
+    
+    // Reset animation after a short delay
+    setTimeout(() => {
+      setIsClicking(false);
+    }, 150);
+    
+    // Reset ripple after animation completes
+    setTimeout(() => {
+      setShowRipple(false);
+    }, 700);
+    
+    // Toggle expanded state
+    setIsExpanded(prev => !prev);
   }, [isPaid]);
 
   // Compute current tier and related values - memoized for performance
@@ -128,6 +154,17 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }, []);
   
+  // Get tier-based glow color for ripple effect
+  const getTierGlowColor = (tier: number): string => {
+    switch (tier) {
+      case 0: return "bg-green-500";
+      case 1: return "bg-yellow-500";
+      case 2: return "bg-amber-500";
+      case 3: return "bg-orange-500";
+      default: return "bg-red-500";
+    }
+  };
+  
   return (
     <div 
       className={`${positionClasses} z-50 scale-[0.9]`}
@@ -147,6 +184,7 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
           overflow-hidden
           transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
           ${isHovering ? 'scale-105 shadow-2xl' : 'scale-100'}
+          ${isClicking ? 'scale-[0.98] shadow-inner' : ''}
           ${isPaid ? 'border border-green-500/40' : ''}
         `}
         onClick={toggleExpand}
@@ -156,7 +194,7 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
         aria-label={isExpanded ? "Collapse parking ticket details" : "Expand parking ticket details"}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
-            toggleExpand();
+            e.currentTarget.click();
             e.preventDefault();
           }
         }}
@@ -167,7 +205,28 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
           <div className="absolute inset-0 bg-[radial-gradient(#ffffff11_1px,transparent_1px)] bg-[length:10px_10px] opacity-10 pointer-events-none"></div>
           
           {/* Enhanced gloss effect */}
-          <div className="absolute inset-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent opacity-40 transition-opacity duration-300 pointer-events-none"></div>
+          <div className={`
+            absolute inset-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent opacity-40 transition-opacity duration-300 pointer-events-none
+            ${isClicking ? 'opacity-60' : 'opacity-40'}
+          `}></div>
+          
+          {/* Ripple effect on click */}
+          {showRipple && (
+            <div 
+              className={`
+                absolute rounded-full 
+                ${isPaid ? 'bg-green-500/20' : `${getTierGlowColor(currentTier.tier)}/20`}
+                animate-ripple pointer-events-none
+              `}
+              style={{
+                top: clickPosition.y,
+                left: clickPosition.x,
+                width: '5px',
+                height: '5px',
+                transform: 'translate(-50%, -50%)',
+              }}
+            />
+          )}
           
           {/* Main display area - always visible section */}
           <div className="flex flex-col justify-between p-4 space-y-5 relative">
@@ -175,14 +234,16 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
             <TicketHeader 
               isPaid={isPaid} 
               currentTier={currentTier} 
-              paidAmount={paidAmount} 
+              paidAmount={paidAmount}
+              isClicking={isClicking} 
             />
             
             {/* Progress indicator lights */}
             <ProgressIndicator 
               activeDots={activeDots} 
               isPaid={isPaid} 
-              currentTier={currentTier} 
+              currentTier={currentTier}
+              isClicking={isClicking}
             />
           </div>
           
@@ -200,7 +261,8 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
                 timeUntilChange={timeUntilChange} 
                 nextTier={nextTier} 
                 currentTier={currentTier} 
-                handlePayNow={handlePayNow} 
+                handlePayNow={handlePayNow}
+                isClicking={isClicking} 
               />
             </div>
           )}
@@ -221,6 +283,7 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
               transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] 
               ${isHovering ? 'opacity-80' : 'opacity-40'}
               ${isExpanded ? 'rotate-180' : 'rotate-0'}
+              ${isClicking ? 'scale-75' : 'scale-100'}
             `}>
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -248,6 +311,7 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
                     : currentTier.tier === 3 
                       ? 'bg-orange-500/30' 
                       : 'bg-red-500/30'}
+            ${isClicking ? 'opacity-60 scale-110' : 'opacity-30 scale-100'}
           `}></div>
         </div>
       </div>
