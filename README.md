@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MOA City - Parking Ticket Timer
 
-## Getting Started
+A digital parking ticket system that displays current rates, time remaining, and allows for payment processing.
 
-First, run the development server:
+## 🎯 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Real-time display of current parking rates (R10-R80)
+- Visual indicator of time remaining
+- Interactive UI with expandable details
+- Payment processing with confirmation screen
+- Fully accessible with keyboard navigation and screen reader support
+- Responsive design with customizable positioning
+
+## 📦 Component Overview
+
+The `TicketTimer` component is a modular, reusable widget that can be placed anywhere in your application.
+
+### Usage
+
+```jsx
+import TicketTimer from '@/components/TicketTimer';
+
+// Basic usage
+<TicketTimer />
+
+// With custom options
+<TicketTimer 
+  initialMinutes={60} 
+  position="top-right"
+  defaultExpanded={true}
+  onPayment={(amount) => console.log(`Payment of ${amount} processed`)}
+/>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Props
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `initialMinutes` | number | 0 | Initial position for the timer (minutes from starting point) |
+| `position` | 'bottom-right' \| 'bottom-left' \| 'top-right' \| 'top-left' | 'bottom-right' | Custom position for the widget |
+| `defaultExpanded` | boolean | false | Initial state of the expansion |
+| `onPayment` | (amount: string) => void | undefined | Callback when payment is made |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Project Structure
 
-## Learn More
+```
+├── components/
+│   └── TicketTimer/           # Widget component folder
+│       ├── index.tsx          # Main TicketTimer component
+│       ├── index.test.tsx     # Tests for the component
+│       ├── TicketHeader.tsx   # Price display component
+│       ├── ProgressIndicator.tsx  # Dot indicators component
+│       ├── ExpandedSection.tsx    # Detailed view component
+│       └── PaymentConfirmation.tsx # Payment success component
+├── lib/
+│   ├── constants.ts           # Price tiers and type definitions
+│   ├── styleUtils.ts          # Style-related utility functions
+│   └── timerUtils.ts          # Timer-related utility functions
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Clone the repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Run the development server:
+   ```
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) to see the result.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧪 Testing
 
-## Deploy on Vercel
+Run tests with:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+npm test
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔍 Implementation Details
+
+The TicketTimer is built using a modular architecture with:
+
+- React hooks for state management (useState, useEffect, useMemo, useCallback)
+- TypeScript for type safety
+- Tailwind CSS for styling
+- ARIA attributes for accessibility
+- React.memo for performance optimization
+
+## 📱 Responsive Design
+
+The component is designed to work on devices of all sizes and can be positioned in any corner of the screen using the `position` prop.
+
+## 📄 License
+
+MIT
