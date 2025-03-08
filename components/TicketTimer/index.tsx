@@ -6,6 +6,15 @@ import PaymentConfirmation from "./PaymentConfirmation";
 import ProgressIndicator from "./ProgressIndicator";
 import TicketHeader from "./TicketHeader";
 
+// Import Roboto font
+import { Roboto } from 'next/font/google';
+
+// Initialize Roboto font
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export interface TicketTimerProps {
   /** Initial position for the timer (minutes from starting point) */
@@ -119,13 +128,6 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }, []);
   
-  // Compute height class based on expansion state and tier
-  const heightClass = useMemo(() => {
-    if (!isExpanded) return 'h-[120px]';
-    // Use different heights for the last tier vs others
-    return currentTier.tier === 4 ? 'h-[230px]' : 'h-[290px]';
-  }, [isExpanded, currentTier.tier]);
-  
   return (
     <div 
       className={`${positionClasses} z-50 scale-[0.9]`}
@@ -135,17 +137,17 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
     >
       <div 
         className={`
+          ${roboto.className}
           relative 
           w-40
           cursor-pointer
-          bg-gradient-to-b from-zinc-800 to-zinc-900
+          bg-black
           rounded-2xl 
           shadow-xl
           overflow-hidden
-          transition-all duration-300 ease-in-out
-          ${isHovering ? 'scale-105' : 'scale-100'}
-          ${heightClass}
-          ${isPaid ? 'border border-green-500/30' : ''}
+          transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+          ${isHovering ? 'scale-105 shadow-2xl' : 'scale-100'}
+          ${isPaid ? 'border border-green-500/40' : ''}
         `}
         onClick={toggleExpand}
         aria-expanded={isExpanded}
@@ -159,103 +161,95 @@ const TicketTimer: React.FC<TicketTimerProps> = ({
           }
         }}
       >
-        {/* Subtle metallic texture overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff11_1px,transparent_1px)] bg-[length:10px_10px] opacity-10"></div>
-        
-        {/* Gloss effect */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent h-1/3 opacity-30"></div>
-        
-        {/* Curved edge detail */}
-        <div className="absolute -right-6 -top-6 w-20 h-20 bg-zinc-950 rounded-full opacity-30"></div>
-        
-        {/* Main display area - always visible section */}
-        <div className="absolute inset-5 flex flex-col justify-between h-[90px]">
-          {/* Digital readout - displays the appropriate price based on hours with matching tier color */}
-          <TicketHeader 
-            isPaid={isPaid} 
-            currentTier={currentTier} 
-            paidAmount={paidAmount} 
-          />
+        {/* Container with flex column layout */}
+        <div className="flex flex-col relative w-full">
+          {/* Subtle metallic texture overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff11_1px,transparent_1px)] bg-[length:10px_10px] opacity-10 pointer-events-none"></div>
           
-          {/* Progress indicator lights */}
-          <ProgressIndicator 
-            activeDots={activeDots} 
-            isPaid={isPaid} 
-            currentTier={currentTier} 
-          />
-        </div>
-            
-        {/* Expanded section - detailed info about next price change */}
-        <div 
-          className={`
-            absolute top-[100px] inset-x-0 h-[130px] px-4 pt-1
-            bg-gradient-to-b from-zinc-900 to-zinc-950
-            border-t border-zinc-800/30
-            transition-all duration-300 ease-in-out
-            ${isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
-          `}
-          aria-hidden={!isExpanded}
-        >
-          {isPaid ? (
-            <PaymentConfirmation 
-              getPaymentTime={getPaymentTime} 
-            />
-          ) : (
-            <ExpandedSection 
-              timeUntilChange={timeUntilChange} 
-              nextTier={nextTier} 
+          {/* Enhanced gloss effect */}
+          <div className="absolute inset-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent opacity-40 transition-opacity duration-300 pointer-events-none"></div>
+          
+          {/* Main display area - always visible section */}
+          <div className="flex flex-col justify-between p-4 space-y-5 relative">
+            {/* Digital readout - displays the appropriate price based on hours with matching tier color */}
+            <TicketHeader 
+              isPaid={isPaid} 
               currentTier={currentTier} 
-              handlePayNow={handlePayNow} 
+              paidAmount={paidAmount} 
             />
-          )}
-        </div>
+            
+            {/* Progress indicator lights */}
+            <ProgressIndicator 
+              activeDots={activeDots} 
+              isPaid={isPaid} 
+              currentTier={currentTier} 
+            />
+          </div>
           
-        {/* Side texture/grip */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-16 w-2">
-          <div className="h-full w-full flex flex-col space-y-0.5">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div 
-                key={i} 
-                className="h-0.5 w-full bg-zinc-950/50"
-              ></div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Dynamic ambient glow based on price tier or paid status */}
-        <div className={`
-          absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-2xl transition-colors duration-1000
-          ${isPaid 
-            ? 'bg-green-500/20' 
-            : currentTier.tier === 0 
-              ? 'bg-green-500/20' 
-              : currentTier.tier === 1 
-                ? 'bg-yellow-500/20' 
-                : currentTier.tier === 2 
-                  ? 'bg-amber-500/20' 
-                  : currentTier.tier === 3 
-                    ? 'bg-orange-500/20' 
-                    : 'bg-red-500/20'}
-        `}></div>
-        
-        {/* Expand/collapse indicator - only show if not paid */}
-        {!isPaid && (
-          <div className={`
-            absolute bottom-2 left-1/2 transform -translate-x-1/2 w-5 h-2
-            transition-all duration-300 opacity-50 
-            ${isExpanded ? 'rotate-180' : 'rotate-0'}
-          `}>
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 20 10" 
-              fill="white"
-              className="opacity-40"
-              aria-hidden="true"
+          {/* Expanded content - conditionally rendered */}
+          {isExpanded && !isPaid && (
+            <div 
+              className="px-4 pb-4 pt-2 border-t border-zinc-800/50 transition-all duration-500"
+              style={{ 
+                animationName: 'slideDown',
+                animationDuration: '500ms',
+                animationTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}
             >
-              <path d="M0 0 L10 10 L20 0 Z" />
-            </svg>
-          </div>
-        )}
+              <ExpandedSection 
+                timeUntilChange={timeUntilChange} 
+                nextTier={nextTier} 
+                currentTier={currentTier} 
+                handlePayNow={handlePayNow} 
+              />
+            </div>
+          )}
+          
+          {/* Payment confirmation section */}
+          {isPaid && (
+            <div className="px-4 pb-4 pt-2 border-t border-zinc-800/50">
+              <PaymentConfirmation 
+                getPaymentTime={getPaymentTime} 
+              />
+            </div>
+          )}
+          
+          {/* Expand/collapse indicator with enhanced animation - only show if not paid */}
+          {!isPaid && (
+            <div className={`
+              relative w-5 h-2 mx-auto mb-2
+              transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] 
+              ${isHovering ? 'opacity-80' : 'opacity-40'}
+              ${isExpanded ? 'rotate-180' : 'rotate-0'}
+            `}>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 20 10" 
+                fill="white"
+                className="transition-transform duration-300"
+                aria-hidden="true"
+              >
+                <path d="M0 0 L10 10 L20 0 Z" />
+              </svg>
+            </div>
+          )}
+          
+          {/* Enhanced dynamic ambient glow based on price tier or paid status */}
+          <div className={`
+            absolute -bottom-8 -left-8 w-28 h-28 rounded-full blur-2xl transition-colors duration-1000 pointer-events-none
+            ${isPaid 
+              ? 'bg-green-500/30 animate-pulse' 
+              : currentTier.tier === 0 
+                ? 'bg-green-500/30' 
+                : currentTier.tier === 1 
+                  ? 'bg-yellow-500/30' 
+                  : currentTier.tier === 2 
+                    ? 'bg-amber-500/30' 
+                    : currentTier.tier === 3 
+                      ? 'bg-orange-500/30' 
+                      : 'bg-red-500/30'}
+          `}></div>
+        </div>
       </div>
     </div>
   );

@@ -18,38 +18,46 @@ const TicketHeader: React.FC<TicketHeaderProps> = ({
   paidAmount 
 }) => {
   return (
-    <div className="flex flex-col items-end mt-2 mr-2">
+    <div className="flex flex-col">
       {isPaid ? (
-        <div>
+        <div className="transition-all duration-500">
           <div 
-            className="text-green-400 font-mono text-2xl font-bold tracking-wider"
-            style={{ textShadow: '0 0 8px rgba(74, 222, 128, 0.8)' }}
+            className="text-green-500 text-2xl font-bold tracking-wide"
+            style={{ 
+              textShadow: '0 0 10px rgba(74, 222, 128, 0.8)',
+              transition: 'all 0.3s ease-out' 
+            }}
           >
             {paidAmount}
           </div>
-          <div className="text-gray-400 text-xs mt-0.5 font-mono opacity-70">
+          <div 
+            className="text-gray-500 text-xs mt-0.5 tracking-wide"
+            style={{ transition: 'all 0.3s ease-out' }}
+          >
             Paid
           </div>
         </div>
       ) : (
         <>
           <div 
-            className={`${getTierTextColor(currentTier.tier)} font-mono text-2xl font-bold tracking-wider transition-all duration-300 ${currentTier.price.length > 3 ? 'text-xl' : ''}`}
-            style={{ textShadow: `0 0 8px ${getTierTextGlow(currentTier.tier)}` }}
+            className={`${getTierTextColor(currentTier.tier)} text-2xl font-bold tracking-wide transition-all duration-500`}
+            style={{ 
+              textShadow: `0 0 10px ${getTierTextGlow(currentTier.tier)}`,
+              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+            }}
             aria-label={`Current rate: ${currentTier.price}`}
           >
             {currentTier.price}
           </div>
           
-          {/* Time until next change indicator */}
-          {currentTier.tier < 4 && (
-            <div 
-              className="text-gray-400 text-xs mt-0.5 font-mono opacity-70"
-              aria-label={`Time until price change: ${getTimeUntilChange(currentTier, currentTier.startMinute)}`}
-            >
-              {getTimeUntilChange(currentTier, currentTier.startMinute)}
-            </div>
-          )}
+          {/* Time since start indicator */}
+          <div 
+            className="text-gray-500 text-xs mt-0.5 transition-all duration-300"
+            style={{ transition: 'all 0.3s ease-out' }}
+            aria-label={`Time elapsed: ${getTimeUntilChange(currentTier, currentTier.startMinute)}`}
+          >
+            {getTimeUntilChange(currentTier, currentTier.startMinute)}
+          </div>
         </>
       )}
     </div>

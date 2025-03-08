@@ -18,77 +18,69 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   // Get price tier color based on current tier
   const getPriceColor = (tier: number): string => {
     switch (tier) {
-      case 0: return "bg-green-400"; // R10
-      case 1: return "bg-yellow-400"; // R20
-      case 2: return "bg-amber-400"; // R30
-      case 3: return "bg-orange-400"; // R50
-      default: return "bg-red-400"; // R80
+      case 0: return "bg-green-500"; // R10
+      case 1: return "bg-yellow-500"; // R20
+      case 2: return "bg-amber-500"; // R30
+      case 3: return "bg-orange-500"; // R50
+      default: return "bg-red-500"; // R80
     }
   };
   
   // Get glow color based on current tier
   const getGlowColor = (tier: number): string => {
     switch (tier) {
-      case 0: return "rgba(74, 222, 128, 0.8)"; // R10
-      case 1: return "rgba(250, 204, 21, 0.8)"; // R20
-      case 2: return "rgba(251, 146, 60, 0.8)"; // R30
-      case 3: return "rgba(249, 115, 22, 0.8)"; // R50
-      default: return "rgba(248, 113, 113, 0.8)"; // R80
+      case 0: return "rgba(74, 222, 128, 0.9)"; // R10
+      case 1: return "rgba(250, 204, 21, 0.9)"; // R20
+      case 2: return "rgba(251, 146, 60, 0.9)"; // R30
+      case 3: return "rgba(249, 115, 22, 0.9)"; // R50
+      default: return "rgba(248, 113, 113, 0.9)"; // R80
     }
   };
 
   return (
-    <div 
-      className="flex justify-center space-x-1 mb-6"
-      role="progressbar"
-      aria-valuenow={Math.round((activeDots / 9) * 100)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={isPaid ? "Payment complete" : "Time progression"}
-    >
+    <div className="flex justify-center space-x-1.5 mt-2">
       {Array.from({ length: 10 }).map((_, i) => {
-        // Determine if light should be active based on current tier progression
-        const isActive = i <= activeDots;
+        // Determine if light should be active
+        const isActive = isPaid ? (i === 0 || i % 3 === 0) : i < activeDots;
+        const isPulse = isPaid && (i === 0 || i % 3 === 0);
         
-        // Different colors and styles when paid
-        if (isPaid) {
-          return (
-            <div
-              key={i}
-              className={`
-                w-1.5 h-1.5 rounded-full 
-                transition-all duration-300
-                ${i === 9 
-                  ? 'bg-green-400 shadow-[0_0_7px_2px_rgba(74,222,128,0.8)] animate-pulse' 
-                  : 'bg-green-400/70'}
-              `}
-              aria-hidden="true"
-            />
-          );
-        }
+        // Add staggered animation delays
+        const baseDelayMs = isPaid ? 300 : 0;
+        const pulseDelay = `${baseDelayMs + (i * 100)}ms`;
         
         // Check if this is the leading dot (last active dot)
-        const isLeadingDot = Math.abs(i - activeDots) < 0.5;
+        const isLeadingDot = !isPaid && Math.abs(i - activeDots) < 0.5;
         
-        const activeColor = getPriceColor(currentTier.tier);
-        const glowColor = getGlowColor(currentTier.tier);
-    
         return (
-          <div
+          <div 
             key={i}
-            className={`
-              w-1.5 h-1.5 rounded-full 
-              transition-all duration-300
-              ${isActive 
-                ? isLeadingDot 
-                  ? `${activeColor} shadow-[0_0_7px_2px_${glowColor}] animate-pulse`
-                  : i >= 7
-                    ? `${activeColor} shadow-[0_0_5px_1px_${glowColor}]`
-                    : 'bg-white/70'
-                : 'bg-zinc-700'}
-            `}
-            aria-hidden="true"
-          />
+            className="relative"
+          >
+            {/* Outer circle (always visible) */}
+            <div 
+              className={`
+                h-1.5 w-1.5 rounded-full 
+                ${isActive ? 'bg-zinc-700' : 'bg-zinc-800'}
+                transition-all duration-300 ease-in-out
+              `}
+            ></div>
+            
+            {/* Active state inner circle */}
+            <div 
+              className={`
+                absolute top-0 left-0 
+                h-1.5 w-1.5 rounded-full
+                transition-all duration-500 ease-in-out
+                ${isActive ? getPriceColor(currentTier.tier) : 'bg-transparent opacity-0'}
+                ${isPulse || isLeadingDot ? 'animate-pulse' : ''}
+              `} 
+              style={{ 
+                boxShadow: isActive ? `0 0 8px ${getGlowColor(currentTier.tier)}` : 'none',
+                animationDelay: isPulse ? pulseDelay : '0ms',
+                transitionDelay: `${i * 40}ms`
+              }}
+            ></div>
+          </div>
         );
       })}
     </div>
